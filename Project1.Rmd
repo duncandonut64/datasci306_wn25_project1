@@ -29,6 +29,18 @@ Your job in this project falls into two categories:
     * Call the first table `daily`: "./data/natural_gas_germany_daily.csv"
     * Call the second table `gas`: "./data/dutch_ttf_natural_gas.csv". Be sure to properly import the `Date` column.
     * Demonstrate that these have been loaded by showing the number of rows and columns in each table.
+    
+
+```{r}
+daily = read_csv("./data/natural_gas_germany_daily.csv")
+gas = read_csv("./data/dutch_ttf_natural_gas.csv")
+
+print("Daily Dimensions:")
+dim(daily)
+print("Gas Dimensions:")
+dim(gas)
+
+```
   
 
 ### Task 2
