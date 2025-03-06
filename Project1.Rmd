@@ -1,6 +1,6 @@
 ---
 title: "Project 1"
-author: "GROUP MEMBERS"
+author: "Aiolya Zhang, Alok Swaminathan, Duncan Chen"
 output: html_document
 ---
 
@@ -47,6 +47,12 @@ dim(gas)
 
 * The data in `daily` are collected over days, with information on different types of natural gas consumption (`consumption_small`, `consumption_industry`, `consumption_power`). Provide summaries of typical values for each of these three types of consumption.
 
+```{r}
+summary(daily$consumption_small)
+summary(daily$consumption_industry)
+summary(daily$consumption_power)
+```
+
 
 ### Task 3
 
@@ -56,6 +62,11 @@ Answer some questions about the data in `daily`:
 * What is the percentage change in the `consumption_*` variables (that is the last day minus the first day divided by the first day)?
 * What proportion of the days are marked as holidays?
 * For each month in each year, what was the year-month combination with the lowest median `consumption_power` value?
+
+```{r}
+
+```
+
    
 ### Task 4
 
