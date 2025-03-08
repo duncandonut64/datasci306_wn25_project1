@@ -61,8 +61,19 @@ Answer some questions about the data in `daily`:
 * How many weeks do the data cover?
 > The number of weeks covered in the daily data set spans over 312 weeks. 
 * What is the percentage change in the `consumption_*` variables (that is the last day minus the first day divided by the first day)?
+
+> The results of the percentage changes in the consumption variables are listed in the following: 
+> consumption_small - (NA)
+> consumption_industry  - (-49.52467)
+> consumption_power  - (-62.04852)
+
 * What proportion of the days are marked as holidays?
+
+>Proportion of days marked as holidays: 0.0361. 
+
 * For each month in each year, what was the year-month combination with the lowest median `consumption_power` value?
+
+> The month with the lowest median consumption_power value is "2021-08 at 0.1634914	median."
 
 ```{r}
 
