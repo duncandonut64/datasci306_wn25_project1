@@ -59,6 +59,7 @@ summary(daily$consumption_power)
 Answer some questions about the data in `daily`:
 
 * How many weeks do the data cover?
+> The number of weeks covered in the daily data set spans over 312 weeks. 
 * What is the percentage change in the `consumption_*` variables (that is the last day minus the first day divided by the first day)?
 * What proportion of the days are marked as holidays?
 * For each month in each year, what was the year-month combination with the lowest median `consumption_power` value?
