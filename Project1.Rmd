@@ -282,7 +282,85 @@ summarised_daily |>
     * A plot of a summary measure such as a conditional mean
     * A plot using `facet_wrap` or `facet_grid`
     * A plot that shows seasonal effects before the crisis (September 2021 until October 2022)
-    
+
+1.  This is a marginal distribution of `consumption_power` that can show how power station gas consumption changes, and what type of values it generally stays around.
+
+Insight: This shows that power station gas consumption is a right skewed distribution. The general consistency shows that there is a normal range that power stations use, but occasionally, during times of demand, the gas usage spikes. It also means that power demands from gas stay relatively constant most of the time.ß
+
+```{r}
+daily |>
+  ggplot(aes(x=consumption_power)) +
+  geom_histogram(
+    aes(y = after_stat(count)/sum(after_stat(count))), 
+    bins = 75, 
+    fill = "blue",
+    na.rm = TRUE
+  ) +
+  labs(
+    title = "Distribution of power station gas consumption",
+    x = "Power Station Gas Consumption",
+    y = "Marginal Frequency",
+  )
+```
+
+2.  This is a joint distribution that uses a scatter plot to compare temperature with small consumer gas consumption to see if there is any possible relationship.
+
+Insight: Gas consumption is lower at higher temperatures, and decreases as temperatures decrease. This is probably due to reduced need for heating when the temperature is warmer.
+
+```{r}
+daily |>
+  # Kelvin to Celsius
+  mutate(temperature = temperature - 273.15) |>
+  ggplot(aes(x = consumption_small, y = temperature)) +
+  geom_point(alpha = 0.5, na.rm = TRUE) +
+  labs(
+    title = "Temperature vs Small Consumer Gas Consumption",
+    x = "Small Consumer Gas Consumption",
+    y = "Temperature (Celsius)"
+  )
+```
+
+3.  Plotting the the mean percentage change in gas price over every day for each month in the data frame.
+
+Insight: It looks like in recent years the average percent change in gas price has become more volatile, with the positive and negative values being further from 0 than before. And the fact that there are daily averages that are a couple of percentage points from 0 shows how different months and time periods have clear cut trends in gas prices across them.
+
+```{r}
+gas |>
+  # Removes a change of -80%, which doesn't seem real and also occurs in a month with very few data points
+  filter(Date != "10/23/2017") |>
+  mutate(
+    month_year = floor_date(as.Date(Date, format = "%m/%d/%Y"), unit = "month"),
+    change_percent = as.numeric(gsub("%","",`Change %`))
+  ) |>
+  group_by(month_year) |>
+  summarise(avg_percent_change = mean(change_percent, na.rm = TRUE)) |>
+  ggplot(aes(x = month_year, y = avg_percent_change)) +
+  geom_line() +
+  geom_point(color = "blue") +
+  labs(
+    title = "Average percent change in gas price per month",
+    x = "Date",
+    y = "Average Percent Change"
+  )
+```
+
+4.  This faceted plot will show a histogram of gas consumption by power stations on each day of the week.
+
+Insight: Looks like the distribution is similar across the work days of the week, but on the weekend, the power companies have a more right skewed distribution. This is initially confusing, since more people are at home on weekends, but it draws out the conclusion that the the gas power stations need to power businesses that are running during the weekdays is generally more than needed on the weekend when people are just at home.
+
+```{r}
+daily |>
+  ggplot(aes(x = consumption_power)) +
+  geom_histogram(na.rm = TRUE, bins = 50) +
+  facet_wrap(~weekday, nrow = 3, ncol = 3) +
+  labs(
+    title = "Industry Gas Consumption per Weekday",
+    x = "Industry Gas Consumption",
+    y = "Count"
+  )
+```
+
+5.  
 
 ### Objective 2
 
