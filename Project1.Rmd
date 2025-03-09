@@ -79,28 +79,194 @@ Answer some questions about the data in `daily`:
 
 ```
 
-   
 ### Task 4
 
-* The original paper aggregated the data to monthly means for each consumption type in `daily` and the `Price` column of `gas` to produce the following image:<br/>
-![Original consumption by month graph](proj1fig1.png)<br/>
-Produce plots that show the same information that is presented in this plot. Your plots do not have to have the same colors or markings, but we should be able to use them to compare the trends for the three price variables. 
+-   The original paper aggregated the data to monthly means for each consumption type in `daily` and the `Price` column of `gas` to produce the following image:<br/> 
+![Original consumption by month graph](proj1fig1.png)<br/> Produce plots that show the same information that is presented in this plot. Your plots do not have to have the same colors or markings, but we should be able to use them to compare the trends for the three price variables.
+
+```{r}
+month_avg_daily <- daily |>
+  mutate(
+    month_year = floor_date(as.Date(date), unit = "month")
+  ) |>
+  group_by(month_year) |>
+  summarise(
+    price_industry_idx = mean(price_industry_idx, na.rm = TRUE),
+    price_households_idx = mean(price_households_idx, na.rm = TRUE)
+  ) |>
+  filter(
+    !(
+      is.nan(price_industry_idx) | 
+      is.nan(price_households_idx)
+    )
+  )
+
+month_avg_daily |>
+  ggplot(aes(
+    x = month_year,
+    y = price_industry_idx
+  )) +
+  geom_line(size = 1) +
+  labs(
+    title = "Natural Gas Price Index - Industry",
+    x = "Date",
+    y = "Price Index (2015 = 100)"
+  )
+
+month_avg_daily |>
+  ggplot(aes(
+    x = month_year,
+    y = price_households_idx
+  )) +
+  geom_line(size = 1) +
+  labs(
+    title = "Natural Gas Price Index - Households",
+    x = "Date",
+    y = "Price Index (2015 = 100)"
+  )
+
+
+
+gas |>
+  mutate(
+    month_year = floor_date(as.Date(Date, format = "%m/%d/%Y"), unit = "month")
+  ) |>
+  group_by(month_year) |>
+  summarise(
+    price = mean(Price, na.rm = TRUE)
+  ) |>
+  ggplot(aes(
+    x = month_year,
+    y = price
+  )) +
+  geom_line(size = 1) +
+  labs(
+    title = "Natural Gas Price TTF",
+    x = "Date",
+    y = "Natural Gas Price TTF"
+  )
+  
+```
 
 ### Task 5
 
-* Write a predicate function that returns true if any value in vector is missing. Use this function to find columns with missing values in the `daily` column. Create a plot or table that shows how often patterns of missingness occur: are all of the missing values in the same rows or are the various columns missing data in different ways?
+-   Write a predicate function that returns true if any value in vector is missing. Use this function to find columns with missing values in the `daily` column. Create a plot or table that shows how often patterns of missingness occur: are all of the missing values in the same rows or are the various columns missing data in different ways?
+
+```{r}
+any_missing <- function(vec) {
+  length(vec[is.na(vec)]) > 0
+}
+
+print("Columns with missing values")
+missing_cols <- sapply(daily, any_missing)
+missing_cols[missing_cols == TRUE] |> names()
+
+daily |>
+  arrange(as.Date(date)) |>
+  mutate(
+    across(
+      -date,
+      ~ ifelse(is.na(.), "Missing", "Not Missing")
+    )
+  ) |>
+  pivot_longer(
+    cols = -date,
+    names_to = "column",
+    values_to = "missing"
+  ) |>
+  ggplot(
+    aes(
+      x = column,
+      y = date,
+      fill = factor(missing)
+    )
+  ) +
+  geom_tile() +
+  labs(
+    title = "Missing Data Heatmap",
+    x = "Rows",
+    y = "Date",
+    fill = "Status"
+  ) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+  
 
 
+```
 
 ### Task 6
 
-* Limit the `gas` table to days where the price exceeded the yearly median. Use the concept of [circular means](https://en.wikipedia.org/wiki/Circular_mean) to compute the average day of the year when price exceeds the yearly median price. The `yday` function will likely be useful here. 
+-   Limit the `gas` table to days where the price exceeded the yearly median. Use the concept of [circular means](https://en.wikipedia.org/wiki/Circular_mean) to compute the average day of the year when price exceeds the yearly median price. The `yday` function will likely be useful here.
 
+```{r}
+circular_mean <- function(vec) {
+  # 366 since there are leap years
+  # Subtract 1 since it goes from 1-366
+  vec <- (vec - 1) * 2 * pi / 366
+  
+  sin_sum <- sin(vec) |> sum()
+  cos_sum <- cos(vec) |> sum()
+  
+  mean_rad <- atan2(sin_sum, cos_sum)
+  
+  if (mean_rad < 0) {
+    mean_rad <- mean_rad + pi
+  }
+  
+  # Return mean converted back to days
+  (mean_rad * 366 / (2 * pi)) + 1
+}
+
+gas_annual_median <- median(gas$Price, na.rm = TRUE)
+
+gas |>
+  filter(Price > gas_annual_median) |>
+  mutate(day = yday(as.Date(Date, format = "%m/%d/%Y"))) |>
+  pull(day) |>
+  circular_mean()
+```
 
 ### Task 7
 
-* Using the cut function, create two nominal variables from quantitative data in the `daily` dataset. Use these groups to summarize the data. Use arrange to show the smallest or largest values in these comparisons.
+-   Using the cut function, create two nominal variables from quantitative data in the `daily` dataset. Use these groups to summarize the data. Use arrange to show the smallest or largest values in these comparisons.
 
+```{r}
+
+percentile_breaks <- c(-Inf, 50, 75, 90, 100, 110, 125, 150, 200, 250, 300, Inf)
+percentile_labels <- c("0-50", "50-75", "75-90", "90-100", "100-110",
+                       "110-125", "125-150", "150-200", "200-250", "250-300", "300+")
+
+summarised_daily <- daily |>
+  mutate(
+    manufacturing_group = cut(
+      manufacturing_idx,
+      breaks = percentile_breaks,
+      labels = percentile_labels,
+    ),
+    hospitality_group = cut(
+      hospitality_idx,
+      breaks = percentile_breaks,
+      labels = percentile_labels
+    )
+  ) |>
+  group_by(manufacturing_group, hospitality_group) |>
+  summarise(
+    avg_manufacturing_idx = mean(manufacturing_idx, na.rm = TRUE),
+    avg_hospitality_idx = mean(hospitality_idx, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+summarised_daily |>
+  arrange(avg_manufacturing_idx) |>
+  select(!avg_hospitality_idx) |>
+  head()
+
+summarised_daily |>
+  arrange(avg_hospitality_idx) |>
+  select(!avg_manufacturing_idx) |>
+  head()
+```
+   
 ### Task 8
 
 * There are several variables that pull out data by different industry (the `_idx` columns). Create a table for these columns using `select` and the `ends_with` function. Provide two different plots that show of the relations between these variables (you do not need to have all variables in each plot).
