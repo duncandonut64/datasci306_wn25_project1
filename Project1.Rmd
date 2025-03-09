@@ -106,7 +106,7 @@ month_avg_daily |>
     x = month_year,
     y = price_industry_idx
   )) +
-  geom_line(size = 1) +
+  geom_line() +
   labs(
     title = "Natural Gas Price Index - Industry",
     x = "Date",
@@ -118,7 +118,7 @@ month_avg_daily |>
     x = month_year,
     y = price_households_idx
   )) +
-  geom_line(size = 1) +
+  geom_line() +
   labs(
     title = "Natural Gas Price Index - Households",
     x = "Date",
@@ -139,7 +139,7 @@ gas |>
     x = month_year,
     y = price
   )) +
-  geom_line(size = 1) +
+  geom_line() +
   labs(
     title = "Natural Gas Price TTF",
     x = "Date",
