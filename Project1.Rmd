@@ -384,6 +384,55 @@ daily |>
 
 * Compare and contrast holidays and non-holidays for household energy consumption. Select 3 ways of comparing these groups. Provide at least one graph.
 
+1. Using summary statistics
+
+```{r}
+print("Holiday household energy consumption")
+daily |>
+  filter(holiday == 1) |>
+  pull(consumption_small) |>
+  summary()
+
+print("Non-holiday household energy consumption")
+daily |>
+  filter(holiday == 0) |>
+  pull(consumption_small) |>
+  summary()
+```
+2. Distributions of each using histograms
+
+```{r}
+daily |>
+  mutate(holiday=ifelse(holiday == 1, "Holiday", "Non-Holiday")) |>
+  ggplot(aes(x=consumption_small)) +
+  geom_histogram(
+    na.rm = TRUE,
+    binwidth = 0.1,
+    fill = "blue",
+  ) +
+  # Add free_y so the groups can be compared more easily despite a big difference in sample size
+  facet_wrap(~ holiday, scales = "free_y") +
+  labs(
+    title = "Histogram of household energy consumption in normal vs. holiday season",
+    x = "Household energy consumption",
+    y = "Count"
+  )
+```
+
+3. Use boxplots to compare the groups
+
+```{r}
+daily |>
+  mutate(holiday=ifelse(holiday == 1, "Holiday", "Non-Holiday")) |>
+  ggplot(aes(x=consumption_small,y=holiday)) +
+  geom_boxplot(na.rm = TRUE) +
+  labs(
+    title = "Boxplot of holiday vs. non-holiday household energy consumption",
+    x = "Household energy consumption",
+    y = "Holiday status"
+  )
+```
+
 ### Objective 3
 
 * According to the paper, the gas crisis occurred between September 2021 until October 2022. Compare this period with the periods before and after on household and industrial consumption. Write a paragraph explaining your findings.
