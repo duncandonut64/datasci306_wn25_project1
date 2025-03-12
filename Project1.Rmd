@@ -468,6 +468,16 @@ ggplot(pivot_longer_daily_consumption, aes(x = date, y = industry_small, color =
 
 * Use `group_by` to summarize by a new feature of this data set not otherwise discussed in the tasks or objectives. What have you learned with these investigation?
 
+```{r}
+print("Christmas Period: ")
+daily$consumption_small[daily$christmas_period == 1] |> summary()
+
+print("Non-Christmas Period: ")
+daily$consumption_small[daily$christmas_period == 0] |> summary()
+```
+
+Through summaries of household energy consumption during christmas periods and not during christmas periods, it shows how during christmas, the mean and median energy consumptions are substantially higher. This is most likely due to a higher frequency of parties and the lights that many turn on during Christmas periods.
+
 ### Objective 6
 
 * Based on your exploration of the data, suggest three questions that could be asked from these data or additional data that you can imagine. Be sure to explain why the previous plots or calculations indicates that this would be an interesting our useful exploration.
