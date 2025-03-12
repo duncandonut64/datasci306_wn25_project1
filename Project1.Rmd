@@ -389,7 +389,17 @@ daily |>
 * According to the paper, the gas crisis occurred between September 2021 until October 2022. Compare this period with the periods before and after on household and industrial consumption. Write a paragraph explaining your findings.
 
 ```{r}
-ggplot()
+pivot_longer_daily_consumption = pivot_longer(daily, cols = c(consumption_industry, consumption_small), names_to = "consumption_type", values_to = "industry_small")
+
+ggplot(pivot_longer_daily_consumption, aes(x = date, y = industry_small, color = consumption_type)) +
+  geom_smooth()
+
+
+
+
+# ggplot(daily, aes(x = date)) +
+#   geom_smooth(aes(y = consumption_industry) +
+#   geom_smooth(aes(y = consumption_small))
 
 
 
