@@ -210,17 +210,17 @@ circular_mean <- function(vec) {
   mean_rad <- atan2(sin_sum, cos_sum)
   
   if (mean_rad < 0) {
-    mean_rad <- mean_rad + pi
+    mean_rad <- mean_rad + 2*pi
   }
   
   # Return mean converted back to days
   (mean_rad * 366 / (2 * pi)) + 1
 }
 
-gas_annual_median <- median(gas$Price, na.rm = TRUE)
-
 gas |>
-  filter(Price > gas_annual_median) |>
+  mutate(year = year(as.Date(Date, "%m/%d/%Y"))) |>
+  group_by(year) |>
+  filter(Price > median(Price)) |>
   mutate(day = yday(as.Date(Date, format = "%m/%d/%Y"))) |>
   pull(day) |>
   circular_mean()
