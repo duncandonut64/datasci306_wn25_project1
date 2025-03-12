@@ -276,12 +276,12 @@ daily_idx = select(daily, ends_with("_idx"))
 
 # Plot 1:
 ggplot(daily_idx, aes(x = price_households_idx, y = price_industry_idx)) +
-  geom_smooth() + 
+  geom_smooth(na.rm = TRUE) + 
   labs(title = "Industry Price Index vs. Household Price Index", x = "Household Price Index", y = "Industry Price Index")
 
 # Plot 2:
 ggplot(daily_idx, aes(x = price_households_idx, y = hospitality_idx)) +
-  geom_smooth() + 
+  geom_smooth(na.rm = TRUE) + 
   labs(title = "Hospitality Index vs. Household Price Index", x = "Household Price Index", y = "Hospitality Index")
 
 
