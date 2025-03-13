@@ -478,6 +478,26 @@ ggplot(daily, aes(x = consumption_small)) +
 
 * Investigate solar radiation's marginal distribution and also it's relationship with temperature.
 
+```{r}
+daily |>
+  ggplot(aes(x = solar_radiation)) +
+  geom_histogram(
+    aes(y = after_stat(count)/sum(after_stat(count))), 
+    bins = 75, 
+    fill = "blue",
+    na.rm = TRUE
+  ) +
+  labs(
+    title = "Distribution of Solar Radiation",
+    x = "Solar Radiation",
+    y = "Marginal Frequency",
+  )
+
+ggplot(daily, aes(x = temperature, y = solar_radiation)) +
+  geom_smooth() +
+  labs(title = "Solar Radiation vs. Temperature", x = "Temperature", y = "Solar Radiation")
+```
+
 
 ### Objective 5
 
