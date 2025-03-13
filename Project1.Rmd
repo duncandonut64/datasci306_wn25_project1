@@ -60,24 +60,98 @@ Answer some questions about the data in `daily`:
 
 * How many weeks do the data cover?
 > The number of weeks covered in the daily data set spans over 312 weeks. 
-* What is the percentage change in the `consumption_*` variables (that is the last day minus the first day divided by the first day)?
 
+* What is the percentage change in the `consumption_*` variables (that is the last day minus the first day divided by the first day)?
 > The results of the percentage changes in the consumption variables are listed in the following: 
-> consumption_small - (NA)
+> consumption_small - (-39.870012)
 > consumption_industry  - (-49.52467)
 > consumption_power  - (-62.04852)
 
 * What proportion of the days are marked as holidays?
-
->Proportion of days marked as holidays: 0.0361. 
+>Proportion of days marked as holidays: 0.0361 or roughly 3.61% of the days in the data set are marked as holidays. 
 
 * For each month in each year, what was the year-month combination with the lowest median `consumption_power` value?
-
 > The month with the lowest median consumption_power value is "2021-08 at 0.1634914	median."
 
 ```{r}
+# Convert the first column (assumed to be date) to Date format
+daily$date <- as.Date(daily[[1]], format="%Y-%m-%d")
+
+# Calculate number of weeks covered
+daily_weeks <- as.numeric(difftime(max(daily$date, na.rm=TRUE), min(daily$date, na.rm=TRUE), units="days")) %/% 7
+
+# Print result
+cat("Natural Gas Germany Daily covers approximately", daily_weeks, "weeks.\n")
+```
+
+```{r}
+# Identify columns that start with "consumption_"
+consumption_cols <- grep("^consumption_", names(daily), value = TRUE)
+
+# Calculate percentage change for each consumption variable
+percentage_changes <- sapply(consumption_cols, function(col) {
+  first_value <- na.omit(daily[[col]])[1]  # First available value
+  last_value <- na.omit(daily[[col]])[length(na.omit(daily[[col]]))]  # Last available value
+  if (first_value != 0) {
+    return(((last_value - first_value) / first_value) * 100)
+  } else {
+    return(NA)  # Undefined percentage change if first value is zero
+  }
+})
+
+# Convert to a data frame
+percentage_changes_df <- data.frame(Variable = names(percentage_changes), 
+                                    Percentage_Change = percentage_changes)
+
+# Print result
+print(percentage_changes_df)
+```
+
+```{r}
+# Check if 'holiday' column exists
+if("holiday" %in% names(daily)) {
+  # Count the number of holiday days (assuming holidays are marked as 1 or TRUE)
+  holiday_days <- sum(daily$holiday, na.rm = TRUE)
+  
+  # Calculate the proportion of holiday days
+  total_days <- nrow(daily)
+  holiday_proportion <- holiday_days / total_days
+  
+  # Print result
+  cat("Proportion of days marked as holidays:", holiday_proportion, "\n")
+} else {
+  cat("The dataset does not contain a 'holiday' column.\n")
+}
+```
+
+```{r}
+# Ensure the date column is in Date format
+daily <- daily %>%
+  mutate(date = as.Date(date, format = "%Y-%m-%d"))
+
+# Extract year and month information
+daily <- daily %>%
+  mutate(year = year(date),
+         month = month(date, label = TRUE))
+
+# Calculate median consumption_power for each year-month combination
+monthly_medians <- daily %>%
+  group_by(year, month) %>%
+  summarise(median_consumption_power = median(consumption_power, na.rm = TRUE)) %>%
+  ungroup()
+
+# Identify the year-month with the lowest median consumption_power for each month
+lowest_medians <- monthly_medians %>%
+  group_by(month) %>%
+  slice_min(median_consumption_power, n = 1, with_ties = FALSE) %>%
+  ungroup()
+
+# Print the results
+print(lowest_medians)
 
 ```
+
+
 
 ### Task 4
 
