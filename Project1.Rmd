@@ -441,8 +441,10 @@ daily |>
 pivot_longer_daily_consumption = pivot_longer(daily, cols = c(consumption_industry, consumption_small), names_to = "consumption_type", values_to = "industry_small")
 
 ggplot(pivot_longer_daily_consumption, aes(x = date, y = industry_small, color = consumption_type)) +
-  geom_smooth()
-
+  geom_smooth() + 
+  geom_vline(xintercept = as.Date("09-01-2021", format=('%m-%d-%Y')), linetype = "dashed", color = "black") +
+  geom_vline(xintercept = as.Date("10-01-2022", format=('%m-%d-%Y')), linetype = "dashed", color = "black") +
+  labs(title = "Household and Industrial Consumption of Gas over time", x = "Date", y = "Consumption")
 
 
 
@@ -458,6 +460,19 @@ ggplot(pivot_longer_daily_consumption, aes(x = date, y = industry_small, color =
 ### Objective 4
 
 * Explore the [documentation for ggplot](https://ggplot2.tidyverse.org/). Select one geometery and one `stat_` function we have not used before or use an option to a previously used geometry/stat with a new option. Write a short paragraph explaining what the plots show. 
+
+```{r}
+ggplot(pivot_longer_daily_consumption, aes(x = date, y = industry_small, color = consumption_type)) +
+  geom_smooth() + 
+  geom_vline(xintercept = as.Date("09-01-2021", format=('%m-%d-%Y')), linetype = "dashed", color = "black") +
+  geom_vline(xintercept = as.Date("10-01-2022", format=('%m-%d-%Y')), linetype = "dashed", color = "black") +
+  labs(title = "Household and Industrial Consumption of Gas over time", x = "Date", y = "Consumption")
+
+ggplot(daily, aes(x = consumption_small)) +
+  stat_ecdf(geom = "point") +
+  labs(title = "ECDF of Household Consumption of Gas")
+
+```
 
 ### Objective 4
 
