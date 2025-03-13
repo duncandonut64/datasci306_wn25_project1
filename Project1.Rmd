@@ -447,14 +447,14 @@ ggplot(pivot_longer_daily_consumption, aes(x = date, y = industry_small, color =
   labs(title = "Household and Industrial Consumption of Gas over time", x = "Date", y = "Consumption")
 
 
-
-# ggplot(daily, aes(x = date)) +
-#   geom_smooth(aes(y = consumption_industry) +
-#   geom_smooth(aes(y = consumption_small))
-
-
-
 ```
+
+
+For household consumption, it alternates between peaking towards the winters and dipping during the summers, although before the crisis (September of 2021), the differences between the peaks and dips were getting smaller and smaller. During the crisis (September of 2021 to October of 2022), the difference got more extreme.
+
+
+For Industry Consumption, it seems to be relatively even over time, but when the crisis started (September of 2021), it started to noticably decrease.
+
 
 
 ### Objective 4
@@ -473,6 +473,14 @@ ggplot(daily, aes(x = consumption_small)) +
   labs(title = "ECDF of Household Consumption of Gas")
 
 ```
+
+
+
+For the first plot with `geom_vline`, the vertical lines indicate where September 1st, 2021 and October 1st, 2022 are, where you pick the `xintercept` variable to identify where you want the vertical line to be on the plot. 
+
+
+For the second plot, I used the `stat_ecdf` function, but with the option `geom`. This allows us to pick a different geometry to create the plot with, so I picked a point to show how visually it is very similar to the default option. 
+
 
 ### Objective 4
 
@@ -497,6 +505,14 @@ ggplot(daily, aes(x = temperature, y = solar_radiation)) +
   geom_smooth() +
   labs(title = "Solar Radiation vs. Temperature", x = "Temperature", y = "Solar Radiation")
 ```
+
+
+The Marginal Frequency of Solar Radiation seems to be right skewed, with most of the values being on the lower end. 
+
+
+
+After a temperature of 270, there seems to be a positive relationship between Solar Radiation and Temperature. As Temperature increases, so does Solar Radiation. 
+
 
 
 ### Objective 5
