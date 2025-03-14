@@ -71,24 +71,21 @@ Answer some questions about the data in `daily`:
 >Proportion of days marked as holidays: 0.0361 or roughly 3.61% of the days in the data set are marked as holidays. 
 
 * For each month in each year, what was the year-month combination with the lowest median `consumption_power` value?
-> The month with the lowest median consumption_power value is "2021-08 at 0.1634914	median."
+> The month with the lowest median consumption_power value is "2021-08 with a median of 0.1634914."
 
 ```{r}
-# Convert the first column (assumed to be date) to Date format
+# Convert the first column to Date format
 daily$date <- as.Date(daily[[1]], format="%Y-%m-%d")
 
 # Calculate number of weeks covered
 daily_weeks <- as.numeric(difftime(max(daily$date, na.rm=TRUE), min(daily$date, na.rm=TRUE), units="days")) %/% 7
 
-# Print result
 cat("Natural Gas Germany Daily covers approximately", daily_weeks, "weeks.\n")
 ```
 
 ```{r}
-# Identify columns that start with "consumption_"
 consumption_cols <- grep("^consumption_", names(daily), value = TRUE)
 
-# Calculate percentage change for each consumption variable
 percentage_changes <- sapply(consumption_cols, function(col) {
   first_value <- na.omit(daily[[col]])[1]  # First available value
   last_value <- na.omit(daily[[col]])[length(na.omit(daily[[col]]))]  # Last available value
@@ -99,58 +96,39 @@ percentage_changes <- sapply(consumption_cols, function(col) {
   }
 })
 
-# Convert to a data frame
 percentage_changes_df <- data.frame(Variable = names(percentage_changes), 
                                     Percentage_Change = percentage_changes)
-
-# Print result
 print(percentage_changes_df)
 ```
 
 ```{r}
-# Check if 'holiday' column exists
-if("holiday" %in% names(daily)) {
-  # Count the number of holiday days (assuming holidays are marked as 1 or TRUE)
-  holiday_days <- sum(daily$holiday, na.rm = TRUE)
+# Count the number of holiday days (assuming holidays are marked as 1 or TRUE)
+holiday_days <- sum(daily$holiday, na.rm = TRUE)
   
-  # Calculate the proportion of holiday days
-  total_days <- nrow(daily)
-  holiday_proportion <- holiday_days / total_days
+# Calculate the proportion of holiday days
+total_days <- nrow(daily)
+holiday_proportion <- holiday_days / total_days
   
-  # Print result
-  cat("Proportion of days marked as holidays:", holiday_proportion, "\n")
-} else {
-  cat("The dataset does not contain a 'holiday' column.\n")
-}
+# Print result
+cat("Proportion of days marked as holidays:", holiday_proportion, "\n")
 ```
 
 ```{r}
-# Ensure the date column is in Date format
 daily <- daily %>%
   mutate(date = as.Date(date, format = "%Y-%m-%d"))
 
-# Extract year and month information
 daily <- daily %>%
   mutate(year = year(date),
          month = month(date, label = TRUE))
 
-# Calculate median consumption_power for each year-month combination
 monthly_medians <- daily %>%
   group_by(year, month) %>%
   summarise(median_consumption_power = median(consumption_power, na.rm = TRUE)) %>%
-  ungroup()
+  ungroup() %>%
+  arrange(median_consumption_power)
 
-# Identify the year-month with the lowest median consumption_power for each month
-lowest_medians <- monthly_medians %>%
-  group_by(month) %>%
-  slice_min(median_consumption_power, n = 1, with_ties = FALSE) %>%
-  ungroup()
-
-# Print the results
-print(lowest_medians)
-
+print(monthly_medians)
 ```
-
 
 
 ### Task 4
@@ -225,6 +203,8 @@ gas |>
 ### Task 5
 
 -   Write a predicate function that returns true if any value in vector is missing. Use this function to find columns with missing values in the `daily` column. Create a plot or table that shows how often patterns of missingness occur: are all of the missing values in the same rows or are the various columns missing data in different ways?
+
+- It looks like the missing data is mainly focused on time frames before 2018. And missing data in wages stops a bit earlier than the other missing data.
 
 ```{r}
 any_missing <- function(vec) {
@@ -305,22 +285,21 @@ gas |>
 -   Using the cut function, create two nominal variables from quantitative data in the `daily` dataset. Use these groups to summarize the data. Use arrange to show the smallest or largest values in these comparisons.
 
 ```{r}
-
-percentile_breaks <- c(-Inf, 50, 75, 90, 100, 110, 125, 150, 200, 250, 300, Inf)
-percentile_labels <- c("0-50", "50-75", "75-90", "90-100", "100-110",
+idx_breaks <- c(-Inf, 50, 75, 90, 100, 110, 125, 150, 200, 250, 300, Inf)
+idx_labels <- c("0-50", "50-75", "75-90", "90-100", "100-110",
                        "110-125", "125-150", "150-200", "200-250", "250-300", "300+")
 
 summarised_daily <- daily |>
   mutate(
     manufacturing_group = cut(
       manufacturing_idx,
-      breaks = percentile_breaks,
-      labels = percentile_labels,
+      breaks = idx_breaks,
+      labels = idx_labels,
     ),
     hospitality_group = cut(
       hospitality_idx,
-      breaks = percentile_breaks,
-      labels = percentile_labels
+      breaks = idx_breaks,
+      labels = idx_labels
     )
   ) |>
   group_by(manufacturing_group, hospitality_group) |>
@@ -377,7 +356,7 @@ ggplot(daily_idx, aes(x = price_households_idx, y = hospitality_idx)) +
 
 1.  This is a marginal distribution of `consumption_power` that can show how power station gas consumption changes, and what type of values it generally stays around.
 
-Insight: This shows that power station gas consumption is a right skewed distribution. The general consistency shows that there is a normal range that power stations use, but occasionally, during times of demand, the gas usage spikes. It also means that power demands from gas stay relatively constant most of the time.ß
+Insight: This shows that power station gas consumption is a right skewed distribution. The general consistency shows that there is a normal range that power stations use, but occasionally, during times of demand, the gas usage spikes. It also means that power demands from gas stay relatively constant most of the time.
 
 ```{r}
 daily |>
@@ -452,7 +431,39 @@ daily |>
   )
 ```
 
-5.  
+5. Line graph from September 2021 to October 2022 that marks the different seasons and tracks small time consumer consumption.
+
+Insight: It shows that as the crisis approached, small consumer consumption started to decrease drastically, probably in anticipation or as a cause of the virus.
+
+```{r}
+# Define seasonal background ranges
+season_colors <- data.frame(
+  start = as.Date(c("2021-09-01", "2021-12-01", "2022-03-01", "2022-06-01")),
+  end = as.Date(c("2021-11-30", "2022-02-28", "2022-05-31", "2022-08-31")),
+  season = c("Fall", "Winter", "Spring", "Summer"),
+  fill_color = c("lightgoldenrod1", "lightblue", "lightgreen", "lightpink")
+)
+
+daily |>
+  mutate(date = as.Date(date)) |>
+  filter(date >= as.Date("2021-09-01") & date <= as.Date("2022-10-31")) |>
+  ggplot(aes(x = date, y = consumption_small)) +
+  geom_rect(
+    data = season_colors, 
+    aes(xmin = start, xmax = end, ymin = -Inf, ymax = Inf, fill = season), 
+    alpha = 0.2, inherit.aes = FALSE
+  ) +
+  geom_line(color = "blue", size = 1) +
+  scale_fill_manual(values = setNames(season_colors$fill_color, season_colors$season)) +
+  labs(
+    title = "Consumption Over Time Before Crisis",
+    x = "Date", 
+    y = "Small Consumer Consumption",
+    fill = "Season"
+  ) +
+  theme_minimal() +
+  theme(legend.position = "bottom")
+``` 
 
 ### Objective 2
 
